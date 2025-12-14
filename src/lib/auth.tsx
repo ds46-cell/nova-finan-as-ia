@@ -1,13 +1,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logAuditEvent, AuditActions, AuditEntities } from './audit';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -26,15 +27,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Log audit event for login
+        // Log audit event for login (deferred to avoid deadlock)
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(() => {
-            supabase.from('audit_logs').insert({
-              user_id: session.user.id,
-              action: 'USER_LOGIN',
-              resource: 'auth',
-              details: { email: session.user.email }
-            }).then(() => {});
+            logAuditEvent({
+              action: AuditActions.LOGIN,
+              entity: AuditEntities.AUTH,
+              metadata: { email: session.user.email }
+            });
           }, 0);
         }
       }
@@ -52,33 +52,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     });
     return { error: error as Error | null };
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: { name }
+        data: { 
+          name: fullName.trim(),
+          full_name: fullName.trim() 
+        }
       }
     });
+
+    // Log signup event after successful registration
+    if (!error) {
+      setTimeout(() => {
+        logAuditEvent({
+          action: AuditActions.SIGNUP,
+          entity: AuditEntities.AUTH,
+          metadata: { email: email.trim() }
+        });
+      }, 100);
+    }
+
     return { error: error as Error | null };
   };
 
   const signOut = async () => {
+    // Log logout before signing out
     if (user) {
-      await supabase.from('audit_logs').insert({
-        user_id: user.id,
-        action: 'USER_LOGOUT',
-        resource: 'auth',
-        details: { email: user.email }
+      await logAuditEvent({
+        action: AuditActions.LOGOUT,
+        entity: AuditEntities.AUTH,
+        metadata: { email: user.email }
       });
     }
     await supabase.auth.signOut();

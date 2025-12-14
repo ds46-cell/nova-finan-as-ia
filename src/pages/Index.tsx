@@ -12,7 +12,7 @@ export default function Index() {
       if (user) {
         navigate('/dashboard');
       } else {
-        navigate('/auth');
+        navigate('/login');
       }
     }
   }, [user, loading, navigate]);
