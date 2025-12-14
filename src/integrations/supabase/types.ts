@@ -19,6 +19,8 @@ export type Database = {
           action: string
           created_at: string
           details: Json | null
+          entity: string | null
+          entity_id: string | null
           id: string
           ip_address: string | null
           resource: string | null
@@ -28,6 +30,8 @@ export type Database = {
           action: string
           created_at?: string
           details?: Json | null
+          entity?: string | null
+          entity_id?: string | null
           id?: string
           ip_address?: string | null
           resource?: string | null
@@ -37,6 +41,8 @@ export type Database = {
           action?: string
           created_at?: string
           details?: Json | null
+          entity?: string | null
+          entity_id?: string | null
           id?: string
           ip_address?: string | null
           resource?: string | null
@@ -49,24 +55,30 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string
+          full_name: string | null
           id: string
           name: string
+          status: string
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           email: string
+          full_name?: string | null
           id: string
           name?: string
+          status?: string
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           email?: string
+          full_name?: string | null
           id?: string
           name?: string
+          status?: string
           updated_at?: string
         }
         Relationships: []

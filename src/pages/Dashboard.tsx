@@ -1,41 +1,46 @@
-import { DollarSign, Users, CreditCard, Activity, TrendingUp, Wallet } from 'lucide-react';
+import { Activity, Shield, User, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import KPICard from '@/components/dashboard/KPICard';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useAuth } from '@/lib/auth';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import RecentActivity from '@/components/dashboard/RecentActivity';
-import QuickStats from '@/components/dashboard/QuickStats';
 
-const kpis = [
-  {
-    title: 'Receita Total',
-    value: 'R$ 2.4M',
-    change: 12.5,
-    icon: DollarSign,
-    variant: 'primary' as const,
+const roleLabels: Record<string, string> = {
+  admin: 'Administrador',
+  analyst: 'Analista',
+  viewer: 'Visualizador',
+};
+
+const roleColors: Record<string, string> = {
+  admin: 'bg-destructive/10 text-destructive border-destructive/20',
+  analyst: 'bg-warning/10 text-warning border-warning/20',
+  viewer: 'bg-primary/10 text-primary border-primary/20',
+};
+
+const statusConfig = {
+  active: {
+    label: 'Ativo',
+    icon: CheckCircle,
+    color: 'text-success',
+    bgColor: 'bg-success/10',
   },
-  {
-    title: 'Usuários Ativos',
-    value: '8,249',
-    change: 8.2,
-    icon: Users,
-    variant: 'success' as const,
+  suspended: {
+    label: 'Suspenso',
+    icon: AlertCircle,
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
   },
-  {
-    title: 'Transações',
-    value: '12,847',
-    change: -2.4,
-    icon: CreditCard,
-    variant: 'default' as const,
-  },
-  {
-    title: 'Taxa de Conversão',
-    value: '24.8%',
-    change: 4.1,
-    icon: TrendingUp,
-    variant: 'warning' as const,
-  },
-];
+};
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const { profile, role, loading, displayName, error } = useUserProfile();
+
+  const status = profile?.status || 'active';
+  const statusInfo = statusConfig[status as keyof typeof statusConfig] || statusConfig.active;
+  const StatusIcon = statusInfo.icon;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -43,7 +48,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground">Visão geral do sistema financeiro</p>
+            <p className="text-muted-foreground">Bem-vindo ao sistema enterprise</p>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-success/10 text-success text-sm">
             <Activity className="w-4 h-4" />
@@ -51,91 +56,111 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* KPIs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {kpis.map((kpi, index) => (
-            <KPICard
-              key={kpi.title}
-              {...kpi}
-              delay={index * 100}
-            />
-          ))}
-        </div>
-
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Chart placeholder */}
-          <div className="lg:col-span-2 glass-card p-6 animate-slide-up" style={{ animationDelay: '200ms' }}>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-foreground">Performance Mensal</h3>
-              <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <div className="w-3 h-3 rounded-full bg-primary" />
-                  Receita
-                </span>
-                <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <div className="w-3 h-3 rounded-full bg-accent" />
-                  Despesas
-                </span>
+        {/* User Info Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* User Profile Card */}
+          <div className="glass-card p-6 animate-slide-up">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
+                <User className="w-7 h-7 text-primary-foreground" />
               </div>
-            </div>
-
-            {/* Chart placeholder */}
-            <div className="h-64 flex items-center justify-center border border-dashed border-border rounded-lg">
-              <div className="text-center text-muted-foreground">
-                <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">Gráfico de performance</p>
-                <p className="text-xs opacity-60">Dados em tempo real</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-muted-foreground">Usuário</p>
+                <p className="text-xl font-bold text-foreground truncate">
+                  {loading ? '...' : displayName}
+                </p>
+                <p className="text-sm text-muted-foreground truncate">
+                  {user?.email || 'Não informado'}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Quick Stats */}
-          <QuickStats />
+          {/* Role Card */}
+          <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center">
+                <Shield className="w-7 h-7 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Papel no Sistema</p>
+                <div className="mt-2">
+                  {loading ? (
+                    <div className="h-6 w-24 bg-secondary animate-pulse rounded" />
+                  ) : (
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${roleColors[role || 'viewer']}`}>
+                      {roleLabels[role || 'viewer']}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Card */}
+          <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: '200ms' }}>
+            <div className="flex items-start gap-4">
+              <div className={`w-14 h-14 rounded-xl ${statusInfo.bgColor} flex items-center justify-center`}>
+                <StatusIcon className={`w-7 h-7 ${statusInfo.color}`} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Status da Conta</p>
+                <p className={`text-xl font-bold ${statusInfo.color}`}>
+                  {loading ? '...' : statusInfo.label}
+                </p>
+                {profile?.created_at && (
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    Criada {formatDistanceToNow(new Date(profile.created_at), {
+                      addSuffix: true,
+                      locale: ptBR,
+                    })}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Bottom Grid */}
+        {/* Error Display */}
+        {error && (
+          <div className="glass-card p-4 border-destructive/50 bg-destructive/5">
+            <p className="text-destructive text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Activity */}
+          {/* Recent Activity - Real data from database */}
           <RecentActivity />
 
-          {/* Financial Summary */}
-          <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: '500ms' }}>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-foreground">Resumo Financeiro</h3>
-              <Wallet className="w-5 h-5 text-muted-foreground" />
+          {/* System Info */}
+          <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: '300ms' }}>
+            <h3 className="text-lg font-semibold text-foreground mb-6">Informações do Sistema</h3>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-center py-3 border-b border-border/50">
+                <span className="text-muted-foreground">Ambiente</span>
+                <span className="text-foreground font-medium">Produção</span>
+              </div>
+              <div className="flex justify-between items-center py-3 border-b border-border/50">
+                <span className="text-muted-foreground">Versão</span>
+                <span className="text-foreground font-mono">1.0.0</span>
+              </div>
+              <div className="flex justify-between items-center py-3 border-b border-border/50">
+                <span className="text-muted-foreground">Backend</span>
+                <span className="text-success font-medium">Conectado</span>
+              </div>
+              <div className="flex justify-between items-center py-3">
+                <span className="text-muted-foreground">Auditoria</span>
+                <span className="text-success font-medium">Ativa</span>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 rounded-lg bg-success/5 border border-success/20">
-                <div>
-                  <p className="text-sm text-muted-foreground">Entradas</p>
-                  <p className="text-xl font-bold font-mono text-success">R$ 3.2M</p>
-                </div>
-                <div className="p-2 rounded-lg bg-success/10">
-                  <TrendingUp className="w-5 h-5 text-success" />
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center p-4 rounded-lg bg-destructive/5 border border-destructive/20">
-                <div>
-                  <p className="text-sm text-muted-foreground">Saídas</p>
-                  <p className="text-xl font-bold font-mono text-destructive">R$ 1.8M</p>
-                </div>
-                <div className="p-2 rounded-lg bg-destructive/10">
-                  <TrendingUp className="w-5 h-5 text-destructive rotate-180" />
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center p-4 rounded-lg bg-primary/5 border border-primary/20">
-                <div>
-                  <p className="text-sm text-muted-foreground">Saldo</p>
-                  <p className="text-xl font-bold font-mono text-primary">R$ 1.4M</p>
-                </div>
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <DollarSign className="w-5 h-5 text-primary" />
-                </div>
-              </div>
+            <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20">
+              <p className="text-sm text-muted-foreground">
+                Este é o painel de controle enterprise. Todas as ações são registradas para compliance.
+              </p>
             </div>
           </div>
         </div>
