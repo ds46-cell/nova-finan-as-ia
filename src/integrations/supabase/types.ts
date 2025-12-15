@@ -50,6 +50,113 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_accounts: {
+        Row: {
+          balance: number
+          bank_name: string | null
+          created_at: string
+          currency: string
+          id: string
+          name: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          bank_name?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          name: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          bank_name?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          name?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      financial_transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          tenant_id: string
+          transaction_date: string
+          type: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          tenant_id: string
+          transaction_date?: string
+          type: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          tenant_id?: string
+          transaction_date?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "financial_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpi_cache: {
+        Row: {
+          calculated_at: string
+          id: string
+          kpi_name: string
+          tenant_id: string
+          value: number
+        }
+        Insert: {
+          calculated_at?: string
+          id?: string
+          kpi_name: string
+          tenant_id: string
+          value: number
+        }
+        Update: {
+          calculated_at?: string
+          id?: string
+          kpi_name?: string
+          tenant_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

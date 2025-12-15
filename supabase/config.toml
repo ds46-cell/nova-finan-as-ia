@@ -1,1 +1,13 @@
 project_id = "yyrwivzyjzqwgwugvzvp"
+
+[functions.log-audit-event]
+verify_jwt = false
+
+[functions.calculate-financial-kpis]
+verify_jwt = false
+
+[functions.admin-update-user-role]
+verify_jwt = false
+
+[functions.ai-financial-analysis]
+verify_jwt = false
