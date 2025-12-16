@@ -16,20 +16,20 @@ import {
   Users,
   Activity,
   Bell,
+  Upload,
 } from 'lucide-react';
 
 const mainNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: TrendingUp, label: 'Análises', path: '/dashboard/analytics' },
-  { icon: Wallet, label: 'Finanças', path: '/dashboard/finances' },
-  { icon: FileText, label: 'Relatórios', path: '/dashboard/reports' },
-  { icon: Activity, label: 'Atividades', path: '/dashboard/activities' },
+  { icon: Wallet, label: 'Financeiro', path: '/financeiro' },
+  { icon: TrendingUp, label: 'Análises', path: '/analises' },
+  { icon: Upload, label: 'Integrações', path: '/integracoes' },
+  { icon: Shield, label: 'Compliance', path: '/compliance' },
 ];
 
 const adminNavItems = [
-  { icon: Users, label: 'Usuários', path: '/dashboard/users' },
-  { icon: Bell, label: 'Notificações', path: '/dashboard/notifications' },
-  { icon: Settings, label: 'Configurações', path: '/dashboard/settings' },
+  { icon: Users, label: 'Usuários', path: '/admin/users' },
+  { icon: Bell, label: 'Notificações', path: '/admin/notificacoes' },
 ];
 
 export default function Sidebar() {

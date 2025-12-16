@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_insights: {
+        Row: {
+          content: string
+          created_at: string
+          data_context: Json | null
+          id: string
+          insight_type: string
+          question: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          data_context?: Json | null
+          id?: string
+          insight_type: string
+          question?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          data_context?: Json | null
+          id?: string
+          insight_type?: string
+          question?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -86,6 +116,27 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
       financial_transactions: {
         Row: {
           account_id: string | null
@@ -133,6 +184,83 @@ export type Database = {
           },
         ]
       }
+      integration_logs: {
+        Row: {
+          created_at: string
+          id: string
+          integration_id: string
+          message: string | null
+          metadata: Json | null
+          records_failed: number | null
+          records_processed: number | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          integration_id: string
+          message?: string | null
+          metadata?: Json | null
+          records_failed?: number | null
+          records_processed?: number | null
+          status: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          integration_id?: string
+          message?: string | null
+          metadata?: Json | null
+          records_failed?: number | null
+          records_processed?: number | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_logs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integrations: {
+        Row: {
+          config: Json | null
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          name: string
+          status: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          name: string
+          status?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          name?: string
+          status?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       kpi_cache: {
         Row: {
           calculated_at: string
@@ -154,6 +282,81 @@ export type Database = {
           kpi_name?: string
           tenant_id?: string
           value?: number
+        }
+        Relationships: []
+      }
+      lgpd_consents: {
+        Row: {
+          consent_type: string
+          created_at: string
+          granted: boolean
+          granted_at: string | null
+          id: string
+          ip_address: string | null
+          revoked_at: string | null
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          consent_type: string
+          created_at?: string
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          ip_address?: string | null
+          revoked_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          consent_type?: string
+          created_at?: string
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          ip_address?: string | null
+          revoked_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          target_role: string | null
+          target_user_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          target_role?: string | null
+          target_user_id?: string | null
+          title: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          target_role?: string | null
+          target_user_id?: string | null
+          title?: string
+          type?: string
         }
         Relationships: []
       }
