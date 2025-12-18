@@ -44,6 +44,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_training_rules: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          priority: number | null
+          rule_content: string
+          rule_name: string
+          rule_type: string
+          updated_at: string | null
+          user_id: string
+          version: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority?: number | null
+          rule_content: string
+          rule_name: string
+          rule_type: string
+          updated_at?: string | null
+          user_id: string
+          version?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority?: number | null
+          rule_content?: string
+          rule_name?: string
+          rule_type?: string
+          updated_at?: string | null
+          user_id?: string
+          version?: number | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -390,6 +429,90 @@ export type Database = {
           name?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      security_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          last_used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_health: {
+        Row: {
+          check_type: string
+          checked_at: string | null
+          id: string
+          message: string | null
+          metadata: Json | null
+          status: string
+        }
+        Insert: {
+          check_type: string
+          checked_at?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          status: string
+        }
+        Update: {
+          check_type?: string
+          checked_at?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          status?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          setting_key: string
+          setting_value?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
