@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -17,27 +17,67 @@ import {
   Activity,
   Bell,
   Upload,
+  Bot,
+  FileBarChart,
+  Lock,
 } from 'lucide-react';
 
 const mainNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Wallet, label: 'Financeiro', path: '/financeiro' },
   { icon: TrendingUp, label: 'Análises', path: '/analises' },
+  { icon: FileBarChart, label: 'Relatórios', path: '/relatorios' },
   { icon: Upload, label: 'Integrações', path: '/integracoes' },
   { icon: Shield, label: 'Compliance', path: '/compliance' },
+  { icon: Bot, label: 'IA Agentes', path: '/ia-agentes' },
 ];
 
 const adminNavItems = [
   { icon: Users, label: 'Usuários', path: '/admin/users' },
   { icon: Bell, label: 'Notificações', path: '/admin/notificacoes' },
+  { icon: Activity, label: 'Monitoramento', path: '/monitoramento' },
+  { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [isSecurityVerified, setIsSecurityVerified] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { signOut, user } = useAuth();
 
+  useEffect(() => {
+    const verified = sessionStorage.getItem('security_code_verified') === 'true';
+    setIsSecurityVerified(verified);
+  }, [location]);
+
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = async () => {
+    sessionStorage.removeItem('security_code_verified');
+    await signOut();
+    navigate('/login');
+  };
+
+  if (!isSecurityVerified) {
+    return (
+      <aside className={cn(
+        "fixed left-0 top-0 z-40 h-screen border-r border-border bg-sidebar transition-all duration-300 w-64"
+      )}>
+        <div className="flex h-full flex-col items-center justify-center p-4">
+          <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center mb-4">
+            <Lock className="w-8 h-8 text-destructive" />
+          </div>
+          <p className="text-sm text-muted-foreground text-center mb-4">
+            Sistema bloqueado. Valide seu código de segurança.
+          </p>
+          <Button variant="outline" size="sm" onClick={() => navigate('/security-check')}>
+            Validar Código
+          </Button>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside
@@ -154,7 +194,7 @@ export default function Sidebar() {
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive"
-                onClick={signOut}
+                onClick={handleLogout}
               >
                 <LogOut className="w-4 h-4" />
                 Sair
