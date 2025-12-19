@@ -24,7 +24,9 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      // Clear any previous security verification and redirect to security check
+      sessionStorage.removeItem('security_code_verified');
+      navigate('/security-check');
     }
   }, [user, navigate]);
 
@@ -65,10 +67,10 @@ export default function Login() {
       });
     } else {
       toast({
-        title: "Bem-vindo!",
-        description: "Login realizado com sucesso.",
+        title: "Credenciais validadas",
+        description: "Agora verifique seu código de segurança.",
       });
-      navigate('/dashboard');
+      navigate('/security-check');
     }
     setLoading(false);
   };

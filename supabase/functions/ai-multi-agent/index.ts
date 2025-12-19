@@ -232,14 +232,19 @@ Avalie a qualidade e segurança das análises.`;
       data_context: agentContext,
     });
 
+    // Safely extract counts from context
+    const contextSummary: Record<string, number> = {};
+    for (const [key, value] of Object.entries(agentContext)) {
+      if (Array.isArray(value)) {
+        contextSummary[`${key}_count`] = value.length;
+      }
+    }
+
     return new Response(JSON.stringify({
       agent,
       answer,
       has_custom_rules: (trainingRules?.length || 0) > 0,
-      data_context_summary: {
-        transactions_count: agentContext.transactions?.length,
-        accounts_count: agentContext.accounts?.length,
-      },
+      data_context_summary: contextSummary,
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -17,3 +17,12 @@ verify_jwt = false
 
 [functions.manage-lgpd]
 verify_jwt = false
+
+[functions.validate-security-code]
+verify_jwt = false
+
+[functions.system-health-check]
+verify_jwt = false
+
+[functions.ai-multi-agent]
+verify_jwt = false
