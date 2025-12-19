@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from '@/lib/auth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock, User, ArrowRight, Shield } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, Mail, Lock, User, ArrowRight, Shield, Copy, CheckCircle } from 'lucide-react';
 
 const signupSchema = z.object({
   fullName: z.string().trim().min(2, { message: "Nome deve ter pelo menos 2 caracteres" }).max(100),
@@ -27,22 +29,56 @@ export default function Signup() {
     confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [securityCode, setSecurityCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
+    // If user exists and we have a security code, stay on page to show it
+    // Otherwise redirect to security check
+    if (user && !securityCode) {
+      // Fetch security code for the user
+      const fetchSecurityCode = async () => {
+        const { data, error } = await supabase
+          .from('security_codes')
+          .select('code')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (data?.code) {
+          setSecurityCode(data.code);
+        } else {
+          // No code found, redirect to security check
+          navigate('/security-check');
+        }
+      };
+      fetchSecurityCode();
     }
-  }, [user, navigate]);
+  }, [user, securityCode, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleCopyCode = async () => {
+    if (securityCode) {
+      await navigator.clipboard.writeText(securityCode);
+      setCopied(true);
+      toast({
+        title: 'Código copiado!',
+        description: 'Guarde este código em local seguro.',
+      });
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -79,15 +115,75 @@ export default function Signup() {
           description: error.message,
         });
       }
+      setLoading(false);
     } else {
       toast({
         title: "Conta criada!",
-        description: "Sua conta foi criada com sucesso.",
+        description: "Aguarde enquanto geramos seu código de segurança...",
       });
-      navigate('/dashboard');
+      // The useEffect will handle fetching and displaying the security code
+      setLoading(false);
     }
-    setLoading(false);
   };
+
+  // Show security code after successful signup
+  if (securityCode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md border-primary/20">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+              <Shield className="w-8 h-8 text-primary" />
+            </div>
+            <CardTitle className="text-primary">Conta Criada com Sucesso!</CardTitle>
+            <CardDescription>
+              Guarde seu código de segurança. Você precisará dele para acessar o sistema.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="bg-muted p-6 rounded-lg text-center">
+              <p className="text-sm text-muted-foreground mb-2">Seu código de segurança:</p>
+              <div className="flex items-center justify-center gap-3">
+                <code className="text-3xl font-mono font-bold tracking-[0.3em] text-foreground">
+                  {securityCode}
+                </code>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={handleCopyCode}
+                  className="shrink-0"
+                >
+                  {copied ? (
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <Copy className="w-5 h-5" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-lg">
+              <p className="text-sm text-destructive font-medium">⚠️ Importante:</p>
+              <ul className="text-sm text-muted-foreground mt-2 space-y-1">
+                <li>• Este código é único e intransferível</li>
+                <li>• Guarde em local seguro</li>
+                <li>• Será necessário em todo login</li>
+                <li>• Não compartilhe com ninguém</li>
+              </ul>
+            </div>
+
+            <Button 
+              className="w-full bg-gradient-primary shadow-glow" 
+              onClick={() => navigate('/security-check')}
+            >
+              Continuar para Verificação
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -115,7 +211,7 @@ export default function Signup() {
           </p>
 
           <div className="mt-12 space-y-4">
-            {['Registro seguro', 'Perfil automático', 'Auditoria completa'].map((feature, i) => (
+            {['Registro seguro', 'Código de segurança único', 'Auditoria completa'].map((feature, i) => (
               <div key={i} className="flex items-center gap-3 text-muted-foreground">
                 <div className="w-2 h-2 rounded-full bg-primary" />
                 <span>{feature}</span>
